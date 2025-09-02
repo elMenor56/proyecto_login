@@ -1,0 +1,70 @@
+CREATE DATABASE register_store;
+USE register_store;
+
+CREATE TABLE personas (
+    id_persona Int AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    tipo_identificacion VARCHAR(50),
+    nuip INT,
+    email VARCHAR(100),
+    clave VARCHAR(500),
+    salario DECIMAL(10,2),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_registro DATE DEFAULT (CURRENT_DATE),
+    imagen LONGBLOB
+);
+
+SELECT * FROM personas;
+
+CREATE TABLE usuarios(
+    id_usuario Int AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(100) unique,
+    clave VARCHAR(500),
+    rol ENUM('cliente', 'admin', 'super_usuario') DEFAULT 'cliente',
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+SELECT * FROM usuarios;
+
+CREATE TABLE productos(
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    categoria VARCHAR(100),
+    entradas INT DEFAULT 0,
+    salidas INT DEFAULT 0,
+    stock INT AS (entradas - salidas) VIRTUAL,
+    precio DECIMAL(10,2) NOT NULL,
+    imagen LONGBLOB,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+SELECT * FROM productos;
+
+INSERT INTO personas (nombre, apellido, tipo_identificacion, nuip, email, clave, salario, activo, imagen)
+VALUES 
+('Carlos', 'Ramírez', 'CC', 1001234567, 'carlos@mail.com', 'clave123', 2500000.00, TRUE, NULL),
+('María', 'Gómez', 'TI', 1012233445, 'maria@mail.com', 'pass456', 1800000.00, TRUE, NULL),
+('Andrés', 'Pérez', 'CC', 1023344556, 'andres@mail.com', 'secreto789', 3000000.00, TRUE, NULL),
+('Lucía', 'Fernández', 'CE', 1034455667, 'lucia@mail.com', 'lucia321', 2200000.00, FALSE, NULL),
+('Julián', 'Martínez', 'CC', 1045566778, 'julian@mail.com', 'julianpass', 2800000.00, TRUE, NULL);
+
+INSERT INTO usuarios (nombre, apellido, telefono, email, clave, rol)
+VALUES
+('Ana', 'Torres', '3001234567', 'ana@mail.com', 'ana123', 'cliente'),
+('Pedro', 'López', '3012233445', 'pedro@mail.com', 'pedro456', 'admin'),
+('Laura', 'Castaño', '3023344556', 'laura@mail.com', 'laura789', 'cliente'),
+('Felipe', 'Moreno', '3034455667', 'felipe@mail.com', 'felipe321', 'super_usuario'),
+('Camila', 'Jiménez', '3045566778', 'camila@mail.com', 'camila555', 'cliente');
+
+INSERT INTO productos (nombre, descripcion, categoria, entradas, salidas, precio, imagen)
+VALUES
+('Laptop HP', 'Laptop HP Pavilion 15', 'Tecnología', 50, 5, 2500000.00, NULL),
+('Celular Samsung', 'Samsung Galaxy S22', 'Tecnología', 30, 10, 3500000.00, NULL),
+('Cafetera Oster', 'Cafetera eléctrica de 12 tazas', 'Electrodomésticos', 40, 15, 280000.00, NULL),
+('Escritorio Moderno', 'Escritorio en madera para oficina', 'Muebles', 20, 3, 650000.00, NULL),
+('Silla Gamer', 'Silla ergonómica con soporte lumbar', 'Muebles', 25, 7, 850000.00, NULL);
