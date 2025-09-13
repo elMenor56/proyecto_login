@@ -3,44 +3,39 @@ const API_URL = 'http://localhost:3000/api';
 let productos = [];
 
 //  Elementos del DOM
-const form = document.getElementById('personaForm');
-const contenedorCards = document.getElementById('contenedorCards');
-const templateCard = document.getElementById('templateCard');
+const productoForm = document.getElementById('personaForm');
+const tablaPersonaBody = document.getElementById('tablaPersonaBody');
+const btnCancelar = document.getElementById('btnCancelar');
 const imagenInput = document.getElementById('imagen');
 const previewImagen = document.getElementById('previewImagen');
 
 //  Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    //verificar si el usuario esta autenticando
     verificarAutenticacion();
 
     // Mostrar nombre del usuario si está autenticado
     const usuarioNombre = localStorage.getItem('usuarioNombre');
-    const usuarioRol = localStorage.getItem('usuarioRol');
+    const usuariodescripcion = localStorage.getItem('usuariodescripcion');
     
-    if (!usuarioRol) {
-    usuarioRol = 'cliente';
-}
+    if (usuarioNombre && usuariodescripcion) {
+        const infoUsuario = document.createElement('div');
+        infoUsuario.innerHTML = `
+            <p>Bienvenido, ${usuarioNombre} ${usuariodescripcion} |
+                <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+            </p>
+        `;
+        document.body.insertBefore(infoUsuario, document.body.firstChild);
 
-    if (usuarioNombre) {
-        const div = document.createElement('div');
-        div.innerHTML = `
-    <p><strong>Bienvenido:</strong> ${usuarioNombre}</p>
-    <p><strong>Rol:</strong> ${usuarioRol}</p>
-    `;
-        document.body.insertBefore(div, document.body.firstChild);
-
-        // Agregar listener para cerrar sesión
-        const btnCerrarSesion = document.createElement('button');
-        btnCerrarSesion.textContent = 'Cerrar sesión';
-        btnCerrarSesion.addEventListener('click', cerrarSesion);
-        div.appendChild(btnCerrarSesion);
+        //Agregar listener para cerra sesión
+        document.getElementById('btnCerrarSesion').addEventListener('click', cerrarSesion);
     }
 
     cargarProductos();
 });
 
-form.addEventListener('submit', manejarSubmit);
-document.getElementById('btnCancelar').addEventListener('click', limpiarFormulario);
+productoForm.addEventListener('submit', manejarSubmit);
+btnCancelar.addEventListener('click', limpiarFormulario);
 imagenInput.addEventListener('change', manejarImagen);
 
 //  Verificar autenticación
@@ -50,13 +45,16 @@ function verificarAutenticacion() {
     if (!usuarioId) {
         // No hay sesión de usuario, redirigir al login
         window.location.href = 'login.html';
+        return;
     }
 
-    // Consultar si el usuario aún es válido
+    //Verificar con el servidor si el usuario es valido
     fetch(`${API_URL}/auth/verificar/${usuarioId}`)
-        .then(res => {
-            if (!res.ok) throw new Error('Sesión inválida');
-            return res.json();
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Sesión inválida');
+            }
+            return response.json();
         })
         .then(data => {
             if (!data.success) {
@@ -102,18 +100,11 @@ async function mostrarProductos() {
     for (const producto of productos) {
         const clone = template.content.cloneNode(true);
 
-        const card = clone.querySelector('.card-producto');
-        const img = clone.querySelector('.imagen-producto');
-        const nombre = clone.querySelector('.nombre-producto');
-        const descripcion = clone.querySelector('.descripcion-producto');
-        const id = clone.querySelector('.id-producto');
-        const precio = clone.querySelector('.precio-producto');
-
-        if (!nombre || !descripcion || !precio) {
-            console.error('❌ Uno de los elementos del template no fue encontrado:', {
-                nombre, descripcion, precio
-    });
-}
+        const card = clone.querySelector('.card-productos');
+        const img = clone.querySelector('.imagen-productos');
+        const nombre = clone.querySelector('.nombre-productos');
+        const descripcion = clone.querySelector('.descripcion-productos');
+        const id = clone.querySelector('.id-productos');
 
         // Imagen
         try {
@@ -134,13 +125,13 @@ async function mostrarProductos() {
         // Botones
         const btnEditar = clone.querySelector('.btn-editar');
         const btnEliminar = clone.querySelector('.btn-eliminar');
-
         btnEditar.addEventListener('click', () => editarProducto(producto.id_producto));
         btnEliminar.addEventListener('click', () => eliminarProducto(producto.id_producto));
 
         contenedor.appendChild(clone);
     }
 }
+
 
 async function manejarSubmit(e) {
     e.preventDefault();
@@ -150,7 +141,7 @@ async function manejarSubmit(e) {
         id_producto: document.getElementById('id_producto').value || null,
         nombre: document.getElementById('nombre').value,
         descripcion: document.getElementById('descripcion').value,
-        categoria: document.getElementById('categoria').value,
+        categoria: document.getElementById('categorias').value,
         entradas: parseInt(document.getElementById('entradas').value, 10),
         salidas: parseInt(document.getElementById('salidas').value, 10),
         precio: parseFloat(document.getElementById('precio').value),
@@ -167,24 +158,21 @@ async function manejarSubmit(e) {
                     body: JSON.stringify({ imagen: imagenBase64 }),
                 });
             }
-
             // Luego actualizamos los datos del producto
             await actualizarProducto(producto);
         } else {
             // Primero creamos el producto
             const nuevoProducto = await crearProducto(producto);
-
             // Si hay una imagen seleccionada, la subimos
             if (imagenInput.files[0]) {
                 const imagenBase64 = await convertirImagenBase64(imagenInput.files[0]);
-                await fetch(`${API_URL}/imagenes/insertar/productos/id_producto/${nuevoProducto.id}`, {
+                await fetch(`${API_URL}/imagenes/insertar/productos/id_producto/${nuevoProducto.id_producto}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ imagen: imagenBase64 }),
                 });
             }
         }
-
         limpiarFormulario();
         cargarProductos();
     } catch (error) {
@@ -199,12 +187,10 @@ async function crearProducto(producto) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(producto),
     });
-
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al crear el producto');
     }
-
     return await response.json();
 }
 
@@ -214,12 +200,10 @@ async function actualizarProducto(producto) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(producto)
     });
-
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al actualizar el producto');
     }
-
     return await response.json();
 }
 
@@ -230,7 +214,6 @@ async function eliminarProducto(id) {
             await fetch(`${API_URL}/imagenes/eliminar/productos/id_producto/${id}`, {
                 method: 'DELETE'
             });
-
             // Luego eliminamos el producto
             await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' });
             cargarProductos();
@@ -243,34 +226,37 @@ async function eliminarProducto(id) {
 
 async function editarProducto(id) {
     const producto = productos.find(p => p.id_producto === id);
-    if (!producto) return;
-
-    document.getElementById('id_producto').value = producto.id_producto;
-    document.getElementById('nombre').value = producto.nombre;
-    document.getElementById('descripcion').value = producto.descripcion;
-    document.getElementById('categorias').value = producto.categoria;
-    document.getElementById('entradas').value = producto.entradas;
-    document.getElementById('salidas').value = producto.salidas;
-    document.getElementById('stock').value = producto.stock;
-    document.getElementById('precio').value = producto.precio;
-
+    if (producto) {
+        document.getElementById('id_producto').value = producto.id_producto;
+        document.getElementById('nombre').value = producto.nombre;
+        document.getElementById('descripcion').value = producto.descripcion;
+        document.getElementById('categorias').value = producto.categoria;
+        document.getElementById('entradas').value = producto.entradas;
+        document.getElementById('salidas').value = producto.salidas;
+        document.getElementById('stock').value = producto.stock;
+        document.getElementById('precio').value = producto.precio;
+    
     // Cargar imagen
     try {
         const response = await fetch(`${API_URL}/imagenes/obtener/productos/id_producto/${id}`);
         const data = await response.json();
         if (data.imagen) {
-            previewImagen.src = `data:image/jpeg;base64,${data.imagen}`;
-            previewImagen.style.display = 'block';
+                previewImagen.src = `data:image/jpeg;base64,${data.imagen}`;
+                previewImagen.style.display = 'block';
+            } else {
+                previewImagen.style.display = 'block';
+                previewImagen.src = '';
+            }
+        } catch (error) {
+            console.error('Error al cargar imagen:', error);
+            previewImagen.style.display = 'none';
+            previewImagen.src = '';
         }
-    } catch (error) {
-        console.error('Error al cargar imagen:', error);
-        previewImagen.style.display = 'none';
-        previewImagen.src = '';
     }
 }
 
 function limpiarFormulario() {
-    form.reset();
+    productoForm.reset();
     document.getElementById('id_producto').value = '';
     previewImagen.style.display = 'none';
     previewImagen.src = '';

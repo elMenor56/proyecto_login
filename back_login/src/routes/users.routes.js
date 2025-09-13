@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const CrudController = require('../controllers/crud.controller');
 
+//Instanciamos el controlador
 const crud = new CrudController();
 
+//Tabla y campo que usaremos para este CRUD
 const tabla = 'users';
 const idCampo = 'id';
 
+//Obtener todas las personas
 router.get('/', async (req, res) => {
     try {
         const personas = await crud.obtenerTodos(tabla);
@@ -16,7 +19,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:id', async (req, res) => {
+//Obtener personas por su ID
+router.get('/', async (req, res) => {
     try {
         const persona = await crud.obtenerUno(tabla, idCampo, req.params.id);
         res.json(persona);
@@ -25,6 +29,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+//Crear una nueva persona
 router.post('/', async (req, res) => {
     try {
         const nuevaPersona = await crud.crear(tabla, req.body);
@@ -34,6 +39,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+//Actualizar una persona
 router.put('/:id', async (req, res) => {
     try {
         const personaActualizada = await crud.actualizar(tabla, idCampo, req.params.id, req.body);
@@ -43,6 +49,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+//Eliminar una persona
 router.delete('/:id', async (req, res) => {
     try {
         const resultado = await crud.eliminar(tabla, idCampo, req.params.id);

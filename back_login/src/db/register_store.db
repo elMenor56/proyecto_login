@@ -1,6 +1,7 @@
 CREATE DATABASE register_store;
 USE register_store;
 
+-- Crear tabla personas
 CREATE TABLE personas (
     id_persona Int AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),

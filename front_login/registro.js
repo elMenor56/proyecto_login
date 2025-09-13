@@ -1,20 +1,27 @@
+//API URL base
 const API_URL = 'http://localhost:3000/api';
 
+//Elementos del DOM
 const registroForm = document.getElementById('registroForm');
 const mensajeDiv = document.getElementById('mensaje');
 
+//Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     registroForm.addEventListener('submit', manejarRegistro);
 
+    //Verificar si el usuario esta autenticado
     const usuarioId = localStorage.getItem('usuarioId');
     if (usuarioId) {
+        //Si ya esta autenticado, redirigir a la pagina principal
         window.location.href = 'index_template.html';
     }
 });
 
+//Funcion para manejar el registro
 async function manejarRegistro(e) {
     e.preventDefault();
 
+    //Obtener valores del formulario
     const nombre = document.getElementById('nombre').value;
     const apellido = document.getElementById('apellido').value;
     const telefono = document.getElementById('telefono').value;
@@ -22,11 +29,13 @@ async function manejarRegistro(e) {
     const clave = document.getElementById('clave').value;
     const confirmarClave = document.getElementById('confirmarClave').value;
 
+    //Validar que las contraseñas coincidan
     if (clave !== confirmarClave) {
         mostrarMensaje('Las contraseñas no coinciden', false);
         return;
     }
 
+    //Crear objeto de usuario
     const usuario = {
         nombre,
         apellido,
@@ -37,6 +46,7 @@ async function manejarRegistro(e) {
     };
 
     try {
+        //Enviar solicitud de registro
         const response = await fetch(`${API_URL}/auth/registro`, {
             method: 'POST',
             headers: {
@@ -46,8 +56,11 @@ async function manejarRegistro(e) {
         });
 
         const resultado = await response.json();
+
         if (resultado.success) {
             mostrarMensaje('Registro exitoso. Redirigiendo al inicio de sesión...', true);
+
+            //Redirigir al login despues de un breve retraso
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 2000);
@@ -60,6 +73,7 @@ async function manejarRegistro(e) {
     }
 }
 
+//Funcion para mostrar mensajes
 function mostrarMensaje(texto, esExito) {
     mensajeDiv.textContent = texto;
     mensajeDiv.style.display = 'block';

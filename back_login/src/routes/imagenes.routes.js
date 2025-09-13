@@ -3,8 +3,9 @@ const router = express.Router();
 const multer = require('multer');
 const imagenesController = require('../controllers/imagenes.controller');
 
-router.put('/subir/:tabla/:campoid/:id', async (req, res) => {
-    const { tabla, campoid, id } = req.params;
+//Ruta actualizar una imagen (Recibe imagen en base64)
+router.put('/subir/:tabla/:campoId/:id', async (req, res) => {
+    const { tabla, campoId, id } = req.params;
     const imagenBase64 = req.body.imagen;
 
     if (!imagenBase64) {
@@ -12,7 +13,7 @@ router.put('/subir/:tabla/:campoid/:id', async (req, res) => {
     }
 
     try {
-        const resultado = await imagenesController.procesarImagen(tabla, campoid, id, imagenBase64);
+        const resultado = await imagenesController.procesarImagen(tabla, campoId, id, imagenBase64);
         res.json(resultado);
     } catch (error) {
         console.error('Error al subir la imagen:', error);
@@ -20,11 +21,12 @@ router.put('/subir/:tabla/:campoid/:id', async (req, res) => {
     }
 });
 
-router.get('/obtener/:tabla/:campoid/:id', async (req, res) => {
-    const { tabla, campoid, id } = req.params;
+//Ruta para obtener una imagen (devuelve la imagen en base64)
+router.get('/obtener/:tabla/:campoId/:id', async (req, res) => {
+    const { tabla, campoId, id } = req.params;
 
     try {
-        const imagen = await imagenesController.procesarImagen(tabla, campoid, id);
+        const imagen = await imagenesController.procesarImagen(tabla, campoId, id);
         res.json(imagen);
     } catch (error) {
         console.error('Error al obtener la imagen:', error);
@@ -32,11 +34,12 @@ router.get('/obtener/:tabla/:campoid/:id', async (req, res) => {
     }
 });
 
-router.delete('/eliminar/:tabla/:campoid/:id', async (req, res) => {
-    const { tabla, campoid, id } = req.params;
+//Ruta para eliminar una imagen (pone el campo en imagen a NULL)
+router.delete('/eliminar/:tabla/:campoId/:id', async (req, res) => {
+    const { tabla, campoId, id } = req.params;
 
     try{
-        const resultado = await imagenesController.eliminarImagen(tabla, campoid, id);
+        const resultado = await imagenesController.eliminarImagen(tabla, campoId, id);
         res.json(resultado);
     } catch(error) {
         console.error('Error al eliminar la imagen:', error);
@@ -44,8 +47,9 @@ router.delete('/eliminar/:tabla/:campoid/:id', async (req, res) => {
     }
 });
 
-router.post('/insertar/:tabla/:campoid/:id', async (req, res) =>{
-    const { tabla, campoid, id } = req.params;
+//Ruta para insertar una imagen (Recibe la imagen en base64)
+router.post('/insertar/:tabla/:campoId/:id', async (req, res) =>{
+    const { tabla, campoId, id } = req.params;
     const imagenBase64 = req.body.imagen;
 
     if (!imagenBase64){
@@ -53,7 +57,7 @@ router.post('/insertar/:tabla/:campoid/:id', async (req, res) =>{
     }
 
     try{
-        const resultado = await imagenesController.insertarImagen(tabla, campoid, id, imagenBase64);
+        const resultado = await imagenesController.insertarImagen(tabla, campoId, id, imagenBase64);
         res.json(resultado);
     } catch (error) {
         console.error('Error al insertar la imagen:', error);
